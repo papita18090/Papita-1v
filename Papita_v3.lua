@@ -1,7 +1,3 @@
--- Script: Papita v3
--- Autor: Papita (con la ayuda de Kavo UI)
--- Versión: 1.0
-
 -- Cargar la librería Kavo UI (asegúrate de que el archivo KavoU1.txt esté en la misma carpeta o proporciona la ruta correcta)
 local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/Visualizem/KavoFiles/main/KavoUI.lua"))()
 
