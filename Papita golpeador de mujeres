@@ -1,4 +1,4 @@
--- 🥊 Papita Golpeador v3 - Versión Estable (sin bug de bloqueo)
+-- 🥊 Papita Golpeador v3 - Reparado (Golpes funcionales)
 local uis = game:GetService("UserInputService")
 local runService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -95,15 +95,27 @@ end)
 
 btn.MouseButton1Click:Connect(toggle)
 
--- Loop de golpes con protección
+-- Loop de golpes reparado
 task.spawn(function()
 	while true do
-		if active and character and character:FindFirstChildOfClass("Tool") then
+		if active and character then
 			local tool = character:FindFirstChildOfClass("Tool")
-			if tool and tool.Activate then
-				pcall(function() tool:Activate() end)
+			if tool then
+				if tool:FindFirstChild("RemoteEvent") then
+					-- Algunas herramientas usan RemoteEvent para activar
+					pcall(function()
+						tool.RemoteEvent:FireServer()
+					end)
+				elseif tool.Activate then
+					-- Herramientas estándar con :Activate()
+					pcall(function()
+						tool:Activate()
+						task.wait(0.01)
+						tool:Deactivate() -- Esto ayuda a que se registre correctamente el siguiente golpe
+					end)
+				end
 			end
 		end
-		task.wait(0.06) -- Evita saturación (≈16 golpes por segundo)
+		task.wait(0.06) -- ≈16 golpes por segundo
 	end
 end)
