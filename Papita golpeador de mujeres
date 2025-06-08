@@ -1,4 +1,4 @@
--- 🥊 Papita Golpeador v3 - Potenciado sin cooldown ni lag
+-- 🥊 Papita Golpeador v3 - Estable sin cooldown visible
 local uis = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local runService = game:GetService("RunService")
@@ -47,11 +47,14 @@ Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
 
 -- Variables
 local active = false
-local TweenInfoPulse = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+local cooldown = 0.05
 local pulseTween
 
 local function doClick()
-	local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
+	local char = player.Character
+	if not char then return end
+
+	local tool = char:FindFirstChildOfClass("Tool")
 	if tool then
 		tool:Activate()
 	else
@@ -62,6 +65,7 @@ end
 
 local function startPulse()
 	if pulseTween then pulseTween:Cancel() end
+	local TweenInfoPulse = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
 	pulseTween = TweenService:Create(btn, TweenInfoPulse, {BackgroundColor3 = Color3.fromRGB(255, 100, 100)})
 	pulseTween:Play()
 end
@@ -99,9 +103,12 @@ end)
 
 btn.MouseButton1Click:Connect(toggle)
 
--- Golpes sin lag ni espera
-runService.Heartbeat:Connect(function()
-	if active then
-		doClick()
+-- Bucle controlado con espera mínima (sin congelamiento)
+task.spawn(function()
+	while true do
+		if active then
+			pcall(doClick)
+		end
+		task.wait(cooldown)
 	end
 end)
