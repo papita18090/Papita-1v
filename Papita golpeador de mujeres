@@ -1,9 +1,8 @@
--- 🥊 Papita Golpeador v3 - Estable sin cooldown visible
+-- 🥊 Papita Golpeador v3 (Estable, sin bloqueo de habilidades)
 local uis = game:GetService("UserInputService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local runService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
+local player = game.Players.LocalPlayer
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
@@ -47,21 +46,7 @@ Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
 
 -- Variables
 local active = false
-local cooldown = 0.05
 local pulseTween
-
-local function doClick()
-	local char = player.Character
-	if not char then return end
-
-	local tool = char:FindFirstChildOfClass("Tool")
-	if tool then
-		tool:Activate()
-	else
-		VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-		VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-	end
-end
 
 local function startPulse()
 	if pulseTween then pulseTween:Cancel() end
@@ -103,12 +88,18 @@ end)
 
 btn.MouseButton1Click:Connect(toggle)
 
--- Bucle controlado con espera mínima (sin congelamiento)
+-- Activación solo si tienes herramienta
 task.spawn(function()
 	while true do
 		if active then
-			pcall(doClick)
+			local char = player.Character
+			if char then
+				local tool = char:FindFirstChildOfClass("Tool")
+				if tool then
+					pcall(function() tool:Activate() end)
+				end
+			end
 		end
-		task.wait(cooldown)
+		task.wait(0.05) -- seguro para no saturar
 	end
 end)
