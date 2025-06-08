@@ -1,4 +1,4 @@
--- 🥊 Papita Golpeador v3 (Estable, sin bloqueo de habilidades)
+-- 🥊 Papita Golpeador v3 - Versión Estable (sin bug de bloqueo)
 local uis = game:GetService("UserInputService")
 local runService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -47,11 +47,17 @@ Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
 -- Variables
 local active = false
 local pulseTween
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Reconexión al morir
+player.CharacterAdded:Connect(function(char)
+	character = char
+end)
 
 local function startPulse()
 	if pulseTween then pulseTween:Cancel() end
-	local TweenInfoPulse = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-	pulseTween = TweenService:Create(btn, TweenInfoPulse, {BackgroundColor3 = Color3.fromRGB(255, 100, 100)})
+	local pulseInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+	pulseTween = TweenService:Create(btn, pulseInfo, {BackgroundColor3 = Color3.fromRGB(255, 100, 100)})
 	pulseTween:Play()
 end
 
@@ -80,6 +86,7 @@ local function toggle()
 	if active then deactivate() else activate() end
 end
 
+-- Entradas
 uis.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.R then
 		toggle()
@@ -88,18 +95,15 @@ end)
 
 btn.MouseButton1Click:Connect(toggle)
 
--- Activación solo si tienes herramienta
+-- Loop de golpes con protección
 task.spawn(function()
 	while true do
-		if active then
-			local char = player.Character
-			if char then
-				local tool = char:FindFirstChildOfClass("Tool")
-				if tool then
-					pcall(function() tool:Activate() end)
-				end
+		if active and character and character:FindFirstChildOfClass("Tool") then
+			local tool = character:FindFirstChildOfClass("Tool")
+			if tool and tool.Activate then
+				pcall(function() tool:Activate() end)
 			end
 		end
-		task.wait(0.05) -- seguro para no saturar
+		task.wait(0.06) -- Evita saturación (≈16 golpes por segundo)
 	end
 end)
