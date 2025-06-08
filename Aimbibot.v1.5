@@ -1,37 +1,65 @@
--- 🎯 Papita Aimbot Épico v1.5 (Z/C para activar/desactivar) SOLO PC
+-- 🎯 Papita Aimbot Épico v2 - Compatible con la mayoría de ejecutadores
 local players = game:GetService("Players")
 local uis = game:GetService("UserInputService")
 local runService = game:GetService("RunService")
 local camera = workspace.CurrentCamera
 local localPlayer = players.LocalPlayer
-local mouse = localPlayer:GetMouse()
+
+local targetPartName = "Head"
+local aimbotActive = false
+
+-- 📘 GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "PapitaAimbotPanel"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 280, 0, 120)
+frame.Position = UDim2.new(0.5, -140, 0.05, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "🎯 Papita Aimbot v2"
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+
+local info = Instance.new("TextLabel", frame)
+info.Size = UDim2.new(1, -10, 0, 60)
+info.Position = UDim2.new(0, 5, 0, 45)
+info.Font = Enum.Font.Gotham
+info.TextScaled = true
+info.TextColor3 = Color3.fromRGB(255, 255, 255)
+info.BackgroundTransparency = 1
+info.TextWrapped = true
+info.Text = "Presiona Z para ACTIVAR\nPresiona C para DESACTIVAR"
 
 -- 🔊 Sonidos
 local SoundOn = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
-SoundOn.SoundId = "rbxassetid://6026984224" -- Sonido de activación (clic moderno)
+SoundOn.SoundId = "rbxassetid://6026984224"
 SoundOn.Volume = 2
 
 local SoundOff = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
-SoundOff.SoundId = "rbxassetid://6026984221" -- Sonido de desactivación (clic grave)
+SoundOff.SoundId = "rbxassetid://6026984221"
 SoundOff.Volume = 2
 
-local aimbotActive = false
-local aimbotKey = Enum.KeyCode.Z
-local disableKey = Enum.KeyCode.C
-local targetPartName = "Head" -- O puedes usar "HumanoidRootPart"
-
--- 🎯 Detectar jugador más cercano al mouse
-local function getClosestPlayerToMouse()
+-- 🔍 Buscar jugador más cercano al centro
+local function getClosestPlayerToCenter()
 	local closestPlayer = nil
 	local shortestDistance = math.huge
+	local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
 
-	for _, player in ipairs(players:GetPlayers()) do
+	for _, player in pairs(players:GetPlayers()) do
 		if player ~= localPlayer and player.Character and player.Character:FindFirstChild(targetPartName) then
 			local part = player.Character[targetPartName]
 			local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
-
 			if onScreen then
-				local dist = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+				local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
 				if dist < shortestDistance then
 					shortestDistance = dist
 					closestPlayer = part
@@ -43,36 +71,30 @@ local function getClosestPlayerToMouse()
 	return closestPlayer
 end
 
--- 🎯 Apuntar
+-- 📌 Ajustar cámara (simula apuntado)
 local function aimAt(target)
 	if not target then return end
-	local screenPos, onScreen = camera:WorldToViewportPoint(target.Position)
-	if onScreen then
-		local deltaX = screenPos.X - mouse.X
-		local deltaY = screenPos.Y - mouse.Y
-		mousemoverel(deltaX, deltaY)
-	end
+	camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
 end
 
--- 🎮 Teclas de activación
+-- 🧠 Teclas
 uis.InputBegan:Connect(function(input, processed)
 	if processed then return end
-
-	if input.KeyCode == aimbotKey then
+	if input.KeyCode == Enum.KeyCode.Z then
 		aimbotActive = true
 		SoundOn:Play()
-		warn("🎯 Aimbot ACTIVADO")
-	elseif input.KeyCode == disableKey then
+		info.Text = "✅ Aimbot ACTIVADO\nPresiona C para desactivar"
+	elseif input.KeyCode == Enum.KeyCode.C then
 		aimbotActive = false
 		SoundOff:Play()
-		warn("🛑 Aimbot DESACTIVADO")
+		info.Text = "⛔ Aimbot DESACTIVADO\nPresiona Z para activar"
 	end
 end)
 
 -- 🔁 Loop
 runService.RenderStepped:Connect(function()
 	if aimbotActive then
-		local target = getClosestPlayerToMouse()
+		local target = getClosestPlayerToCenter()
 		if target then
 			aimAt(target)
 		end
