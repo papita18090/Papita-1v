@@ -1,100 +1,92 @@
--- 🎯 Papita Aimbot Épico v2 - Compatible con la mayoría de ejecutadores
-local players = game:GetService("Players")
-local uis = game:GetService("UserInputService")
-local runService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
-local localPlayer = players.LocalPlayer
+-- Papita Aimbot v3 - Totalmente compatible
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
-local targetPartName = "Head"
-local aimbotActive = false
+local aimbotEnabled = false
+local targetPart = "Head"
 
--- 📘 GUI
+-- GUI Panel Azul
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "PapitaAimbotPanel"
+gui.Name = "PapitaAimbotGUI"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 280, 0, 120)
-frame.Position = UDim2.new(0.5, -140, 0.05, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
+frame.Size = UDim2.new(0, 300, 0, 120)
+frame.Position = UDim2.new(0.5, -150, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "🎯 Papita Aimbot v2"
+title.Text = "Papita Aimbot v3"
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundTransparency = 1
 
-local info = Instance.new("TextLabel", frame)
-info.Size = UDim2.new(1, -10, 0, 60)
-info.Position = UDim2.new(0, 5, 0, 45)
-info.Font = Enum.Font.Gotham
-info.TextScaled = true
-info.TextColor3 = Color3.fromRGB(255, 255, 255)
-info.BackgroundTransparency = 1
-info.TextWrapped = true
-info.Text = "Presiona Z para ACTIVAR\nPresiona C para DESACTIVAR"
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Position = UDim2.new(0, 0, 0, 45)
+statusLabel.Size = UDim2.new(1, 0, 1, -45)
+statusLabel.Text = "Presiona [Z] para ACTIVAR\nPresiona [C] para DESACTIVAR"
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextScaled = true
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextWrapped = true
 
--- 🔊 Sonidos
-local SoundOn = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
-SoundOn.SoundId = "rbxassetid://6026984224"
-SoundOn.Volume = 2
-
-local SoundOff = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
-SoundOff.SoundId = "rbxassetid://6026984221"
-SoundOff.Volume = 2
-
--- 🔍 Buscar jugador más cercano al centro
-local function getClosestPlayerToCenter()
-	local closestPlayer = nil
+-- Buscar jugador más cercano
+local function getClosestTarget()
+	local closest = nil
 	local shortestDistance = math.huge
-	local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+	local screenCenter = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
 
-	for _, player in pairs(players:GetPlayers()) do
-		if player ~= localPlayer and player.Character and player.Character:FindFirstChild(targetPartName) then
-			local part = player.Character[targetPartName]
-			local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(targetPart) then
+			local part = player.Character[targetPart]
+			local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+
 			if onScreen then
 				local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
 				if dist < shortestDistance then
 					shortestDistance = dist
-					closestPlayer = part
+					closest = part
 				end
 			end
 		end
 	end
 
-	return closestPlayer
+	return closest
 end
 
--- 📌 Ajustar cámara (simula apuntado)
-local function aimAt(target)
-	if not target then return end
-	camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+-- Apuntar con la cámara
+local function aimAt(part)
+	if part then
+		Camera.CFrame = CFrame.new(Camera.CFrame.Position, part.Position)
+	end
 end
 
--- 🧠 Teclas
-uis.InputBegan:Connect(function(input, processed)
-	if processed then return end
+-- Teclas para activar/desactivar
+UserInputService.InputBegan:Connect(function(input, gpe)
+	if gpe then return end
+
 	if input.KeyCode == Enum.KeyCode.Z then
-		aimbotActive = true
-		SoundOn:Play()
-		info.Text = "✅ Aimbot ACTIVADO\nPresiona C para desactivar"
+		aimbotEnabled = true
+		statusLabel.Text = "Aimbot ACTIVADO\nPresiona [C] para desactivar"
 	elseif input.KeyCode == Enum.KeyCode.C then
-		aimbotActive = false
-		SoundOff:Play()
-		info.Text = "⛔ Aimbot DESACTIVADO\nPresiona Z para activar"
+		aimbotEnabled = false
+		statusLabel.Text = "Aimbot DESACTIVADO\nPresiona [Z] para activar"
 	end
 end)
 
--- 🔁 Loop
-runService.RenderStepped:Connect(function()
-	if aimbotActive then
-		local target = getClosestPlayerToCenter()
+-- Loop de aimbot
+RunService.RenderStepped:Connect(function()
+	if aimbotEnabled then
+		local target = getClosestTarget()
 		if target then
 			aimAt(target)
 		end
