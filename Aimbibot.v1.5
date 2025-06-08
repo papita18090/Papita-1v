@@ -1,0 +1,80 @@
+-- 🎯 Papita Aimbot Épico v1.5 (Z/C para activar/desactivar) SOLO PC
+local players = game:GetService("Players")
+local uis = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local camera = workspace.CurrentCamera
+local localPlayer = players.LocalPlayer
+local mouse = localPlayer:GetMouse()
+
+-- 🔊 Sonidos
+local SoundOn = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
+SoundOn.SoundId = "rbxassetid://6026984224" -- Sonido de activación (clic moderno)
+SoundOn.Volume = 2
+
+local SoundOff = Instance.new("Sound", localPlayer:WaitForChild("PlayerGui"))
+SoundOff.SoundId = "rbxassetid://6026984221" -- Sonido de desactivación (clic grave)
+SoundOff.Volume = 2
+
+local aimbotActive = false
+local aimbotKey = Enum.KeyCode.Z
+local disableKey = Enum.KeyCode.C
+local targetPartName = "Head" -- O puedes usar "HumanoidRootPart"
+
+-- 🎯 Detectar jugador más cercano al mouse
+local function getClosestPlayerToMouse()
+	local closestPlayer = nil
+	local shortestDistance = math.huge
+
+	for _, player in ipairs(players:GetPlayers()) do
+		if player ~= localPlayer and player.Character and player.Character:FindFirstChild(targetPartName) then
+			local part = player.Character[targetPartName]
+			local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+
+			if onScreen then
+				local dist = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+				if dist < shortestDistance then
+					shortestDistance = dist
+					closestPlayer = part
+				end
+			end
+		end
+	end
+
+	return closestPlayer
+end
+
+-- 🎯 Apuntar
+local function aimAt(target)
+	if not target then return end
+	local screenPos, onScreen = camera:WorldToViewportPoint(target.Position)
+	if onScreen then
+		local deltaX = screenPos.X - mouse.X
+		local deltaY = screenPos.Y - mouse.Y
+		mousemoverel(deltaX, deltaY)
+	end
+end
+
+-- 🎮 Teclas de activación
+uis.InputBegan:Connect(function(input, processed)
+	if processed then return end
+
+	if input.KeyCode == aimbotKey then
+		aimbotActive = true
+		SoundOn:Play()
+		warn("🎯 Aimbot ACTIVADO")
+	elseif input.KeyCode == disableKey then
+		aimbotActive = false
+		SoundOff:Play()
+		warn("🛑 Aimbot DESACTIVADO")
+	end
+end)
+
+-- 🔁 Loop
+runService.RenderStepped:Connect(function()
+	if aimbotActive then
+		local target = getClosestPlayerToMouse()
+		if target then
+			aimAt(target)
+		end
+	end
+end)
