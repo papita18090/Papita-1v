@@ -1,0 +1,184 @@
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local clickKey = Enum.KeyCode.Z
+local clickDelay = 0.1
+
+local clicking = false
+
+local function startClicking()
+    while clicking do
+        mouse1click()
+        task.wait(clickDelay)
+    end
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoClickerGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 280, 0, 140)
+frame.Position = UDim2.new(0.7, 0, 0.7, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 10, 60)
+frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.15
+frame.Parent = screenGui
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Clan Champions"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(180, 100, 255)
+title.TextScaled = true
+title.Parent = frame
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 25)
+statusLabel.Position = UDim2.new(0, 0, 0, 105)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Estado: Clan Champions"
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
+statusLabel.TextScaled = true
+statusLabel.Parent = frame
+
+local keyLabel = Instance.new("TextLabel")
+keyLabel.Size = UDim2.new(0.5, -10, 0, 30)
+keyLabel.Position = UDim2.new(0, 5, 0, 40)
+keyLabel.BackgroundTransparency = 1
+keyLabel.Text = "Clan Champions:"
+keyLabel.Font = Enum.Font.Gotham
+keyLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
+keyLabel.TextScaled = true
+keyLabel.TextXAlignment = Enum.TextXAlignment.Left
+keyLabel.Parent = frame
+
+local keyButton = Instance.new("TextButton")
+keyButton.Size = UDim2.new(0.5, -10, 0, 30)
+keyButton.Position = UDim2.new(0.5, 5, 0, 40)
+keyButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
+keyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyButton.Text = clickKey.Name
+keyButton.Font = Enum.Font.GothamBold
+keyButton.TextScaled = true
+keyButton.Parent = frame
+
+local waitingForKey = false
+keyButton.MouseButton1Click:Connect(function()
+    if waitingForKey then return end
+    waitingForKey = true
+    keyButton.Text = "Presiona una tecla..."
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if waitingForKey and input.UserInputType == Enum.UserInputType.Keyboard then
+        clickKey = input.KeyCode
+        keyButton.Text = clickKey.Name
+        waitingForKey = false
+    end
+end)
+
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0.5, -10, 0, 30)
+speedLabel.Position = UDim2.new(0, 5, 0, 75)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Clan Champions"
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
+speedLabel.TextScaled = true
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+speedLabel.Parent = frame
+
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(0.5, -10, 0, 30)
+speedBox.Position = UDim2.new(0.5, 5, 0, 75)
+speedBox.BackgroundColor3 = Color3.fromRGB(70, 20, 100)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.Text = tostring(clickDelay)
+speedBox.Font = Enum.Font.GothamBold
+speedBox.TextScaled = true
+speedBox.ClearTextOnFocus = false
+speedBox.Parent = frame
+
+speedBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(speedBox.Text)
+        if val and val > 0.01 then
+            clickDelay = val
+            speedBox.Text = tostring(clickDelay)
+        else
+            speedBox.Text = tostring(clickDelay)
+        end
+    end
+end)
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(1, -10, 0, 30)
+toggleButton.Position = UDim2.new(0, 5, 0, 105)
+toggleButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Clan Champions"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextScaled = true
+toggleButton.Parent = frame
+
+toggleButton.MouseButton1Click:Connect(function()
+    clicking = not clicking
+    if clicking then
+        toggleButton.Text = "Clan Champions"
+        statusLabel.Text = "Estado: Clan Champions"
+        task.spawn(startClicking)
+    else
+        toggleButton.Text = "Clan Champions"
+        statusLabel.Text = "Estado: Clan Champions"
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == clickKey then
+        clicking = not clicking
+        if clicking then
+            toggleButton.Text = "Clan Champions"
+            statusLabel.Text = "Estado: Clan Champions"
+            task.spawn(startClicking)
+        else
+            toggleButton.Text = "Clan Champions"
+            statusLabel.Text = "Estado: Clan Champions"
+        end
+    end
+end)
+
+if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+    local mobileButton = Instance.new("TextButton", screenGui)
+    mobileButton.Size = UDim2.new(0, 150, 0, 50)
+    mobileButton.Position = UDim2.new(0.7, 0, 0.6, 0)
+    mobileButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
+    mobileButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    mobileButton.TextScaled = true
+    mobileButton.Text = "Clan Champions"
+    mobileButton.BorderSizePixel = 0
+    mobileButton.Active = true
+    mobileButton.Modal = false
+
+    mobileButton.MouseButton1Click:Connect(function()
+        clicking = not clicking
+        mobileButton.Text = "Clan Champions"
+        if clicking then
+            toggleButton.Text = "Clan Champions"
+            statusLabel.Text = "Estado: Clan Champions"
+            task.spawn(startClicking)
+        else
+            toggleButton.Text = "Clan Champions"
+            statusLabel.Text = "Estado: Clan Champions"
+        end
+    end)
+end
