@@ -7,178 +7,141 @@ local mouse = player:GetMouse()
 
 local clickKey = Enum.KeyCode.Z
 local clickDelay = 0.1
-
 local clicking = false
 
 local function startClicking()
-    while clicking do
-        mouse1click()
-        task.wait(clickDelay)
-    end
+	while clicking do
+		mouse1click()
+		task.wait(clickDelay)
+	end
 end
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AutoClickerGUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game.CoreGui
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "ChampionsClicker"
+gui.ResetOnSpawn = false
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 140)
-frame.Position = UDim2.new(0.7, 0, 0.7, 0)
-frame.BackgroundColor3 = Color3.fromRGB(40, 10, 60)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 320, 0, 180)
+frame.Position = UDim2.new(0.5, -160, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(60, 0, 100)
+frame.BackgroundTransparency = 0.05
 frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.15
-frame.Parent = screenGui
 frame.Active = true
 frame.Draggable = true
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
+local uiCorner = Instance.new("UICorner", frame)
+uiCorner.CornerRadius = UDim.new(0, 16)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Clan Champions"
+title.Text = "⚡ Champions Clicker"
 title.Font = Enum.Font.GothamBold
-title.TextColor3 = Color3.fromRGB(180, 100, 255)
+title.TextColor3 = Color3.fromRGB(200, 120, 255)
 title.TextScaled = true
-title.Parent = frame
 
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 25)
-statusLabel.Position = UDim2.new(0, 0, 0, 105)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Estado: Clan Champions"
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
-statusLabel.TextScaled = true
-statusLabel.Parent = frame
-
-local keyLabel = Instance.new("TextLabel")
-keyLabel.Size = UDim2.new(0.5, -10, 0, 30)
-keyLabel.Position = UDim2.new(0, 5, 0, 40)
-keyLabel.BackgroundTransparency = 1
-keyLabel.Text = "Clan Champions:"
-keyLabel.Font = Enum.Font.Gotham
-keyLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
-keyLabel.TextScaled = true
-keyLabel.TextXAlignment = Enum.TextXAlignment.Left
-keyLabel.Parent = frame
-
-local keyButton = Instance.new("TextButton")
-keyButton.Size = UDim2.new(0.5, -10, 0, 30)
-keyButton.Position = UDim2.new(0.5, 5, 0, 40)
-keyButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
+local keyButton = Instance.new("TextButton", frame)
+keyButton.Size = UDim2.new(0.45, 0, 0, 30)
+keyButton.Position = UDim2.new(0.05, 0, 0, 50)
+keyButton.BackgroundColor3 = Color3.fromRGB(120, 60, 200)
+keyButton.Text = "Tecla: Z"
 keyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyButton.Text = clickKey.Name
 keyButton.Font = Enum.Font.GothamBold
 keyButton.TextScaled = true
-keyButton.Parent = frame
 
-local waitingForKey = false
+local delayBox = Instance.new("TextBox", frame)
+delayBox.Size = UDim2.new(0.45, 0, 0, 30)
+delayBox.Position = UDim2.new(0.5, 0, 0, 50)
+delayBox.BackgroundColor3 = Color3.fromRGB(40, 20, 60)
+delayBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+delayBox.Text = tostring(clickDelay)
+delayBox.PlaceholderText = "Retraso"
+delayBox.Font = Enum.Font.GothamBold
+delayBox.TextScaled = true
+delayBox.ClearTextOnFocus = false
+
+local toggleButton = Instance.new("TextButton", frame)
+toggleButton.Size = UDim2.new(0.9, 0, 0, 40)
+toggleButton.Position = UDim2.new(0.05, 0, 0, 95)
+toggleButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+toggleButton.Text = "Activar Champions"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBlack
+toggleButton.TextScaled = true
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1, 0, 0, 30)
+status.Position = UDim2.new(0, 0, 1, -30)
+status.BackgroundTransparency = 1
+status.Text = "Estado: Inactivo"
+status.Font = Enum.Font.Gotham
+status.TextColor3 = Color3.fromRGB(200, 200, 255)
+status.TextScaled = true
+
+local waitingKey = false
 keyButton.MouseButton1Click:Connect(function()
-    if waitingForKey then return end
-    waitingForKey = true
-    keyButton.Text = "Presiona una tecla..."
+	if waitingKey then return end
+	waitingKey = true
+	keyButton.Text = "Presiona..."
 end)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
-    if waitingForKey and input.UserInputType == Enum.UserInputType.Keyboard then
-        clickKey = input.KeyCode
-        keyButton.Text = clickKey.Name
-        waitingForKey = false
-    end
+	if gpe then return end
+	if waitingKey and input.UserInputType == Enum.UserInputType.Keyboard then
+		clickKey = input.KeyCode
+		keyButton.Text = "Tecla: " .. clickKey.Name
+		waitingKey = false
+	elseif input.KeyCode == clickKey then
+		clicking = not clicking
+		status.Text = "Estado: " .. (clicking and "Activado" or "Inactivo")
+		toggleButton.Text = clicking and "Desactivar Champions" or "Activar Champions"
+		if clicking then
+			task.spawn(startClicking)
+		end
+	end
 end)
 
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(0.5, -10, 0, 30)
-speedLabel.Position = UDim2.new(0, 5, 0, 75)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Clan Champions"
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextColor3 = Color3.fromRGB(230, 200, 255)
-speedLabel.TextScaled = true
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Parent = frame
-
-local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0.5, -10, 0, 30)
-speedBox.Position = UDim2.new(0.5, 5, 0, 75)
-speedBox.BackgroundColor3 = Color3.fromRGB(70, 20, 100)
-speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedBox.Text = tostring(clickDelay)
-speedBox.Font = Enum.Font.GothamBold
-speedBox.TextScaled = true
-speedBox.ClearTextOnFocus = false
-speedBox.Parent = frame
-
-speedBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(speedBox.Text)
-        if val and val > 0.01 then
-            clickDelay = val
-            speedBox.Text = tostring(clickDelay)
-        else
-            speedBox.Text = tostring(clickDelay)
-        end
-    end
+delayBox.FocusLost:Connect(function(enter)
+	if enter then
+		local val = tonumber(delayBox.Text)
+		if val and val >= 0.01 then
+			clickDelay = val
+		else
+			delayBox.Text = tostring(clickDelay)
+		end
+	end
 end)
-
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(1, -10, 0, 30)
-toggleButton.Position = UDim2.new(0, 5, 0, 105)
-toggleButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Text = "Clan Champions"
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.TextScaled = true
-toggleButton.Parent = frame
 
 toggleButton.MouseButton1Click:Connect(function()
-    clicking = not clicking
-    if clicking then
-        toggleButton.Text = "Clan Champions"
-        statusLabel.Text = "Estado: Clan Champions"
-        task.spawn(startClicking)
-    else
-        toggleButton.Text = "Clan Champions"
-        statusLabel.Text = "Estado: Clan Champions"
-    end
-end)
-
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if not gpe and input.KeyCode == clickKey then
-        clicking = not clicking
-        if clicking then
-            toggleButton.Text = "Clan Champions"
-            statusLabel.Text = "Estado: Clan Champions"
-            task.spawn(startClicking)
-        else
-            toggleButton.Text = "Clan Champions"
-            statusLabel.Text = "Estado: Clan Champions"
-        end
-    end
+	clicking = not clicking
+	status.Text = "Estado: " .. (clicking and "Activado" or "Inactivo")
+	toggleButton.Text = clicking and "Desactivar Champions" or "Activar Champions"
+	if clicking then
+		task.spawn(startClicking)
+	end
 end)
 
 if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-    local mobileButton = Instance.new("TextButton", screenGui)
-    mobileButton.Size = UDim2.new(0, 150, 0, 50)
-    mobileButton.Position = UDim2.new(0.7, 0, 0.6, 0)
-    mobileButton.BackgroundColor3 = Color3.fromRGB(180, 100, 255)
-    mobileButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    mobileButton.TextScaled = true
-    mobileButton.Text = "Clan Champions"
-    mobileButton.BorderSizePixel = 0
-    mobileButton.Active = true
-    mobileButton.Modal = false
+	local touchButton = Instance.new("TextButton", gui)
+	touchButton.Size = UDim2.new(0, 140, 0, 50)
+	touchButton.Position = UDim2.new(0.8, 0, 0.75, 0)
+	touchButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+	touchButton.Text = "Champions"
+	touchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	touchButton.Font = Enum.Font.GothamBold
+	touchButton.TextScaled = true
+	touchButton.BorderSizePixel = 0
 
-    mobileButton.MouseButton1Click:Connect(function()
-        clicking = not clicking
-        mobileButton.Text = "Clan Champions"
-        if clicking then
-            toggleButton.Text = "Clan Champions"
-            statusLabel.Text = "Estado: Clan Champions"
-            task.spawn(startClicking)
-        else
-            toggleButton.Text = "Clan Champions"
-            statusLabel.Text = "Estado: Clan Champions"
-        end
-    end)
+	local corner = Instance.new("UICorner", touchButton)
+	corner.CornerRadius = UDim.new(0, 12)
+
+	touchButton.MouseButton1Click:Connect(function()
+		clicking = not clicking
+		status.Text = "Estado: " .. (clicking and "Activado" or "Inactivo")
+		toggleButton.Text = clicking and "Desactivar Champions" or "Activar Champions"
+		if clicking then
+			task.spawn(startClicking)
+		end
+	end)
 end
