@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Papita v1 -- Age of heroes", "DarkTheme");
+local Window = Library.CreateLib("Papita v1 -- Age of heroes", "RedTheme");
 local TargetTab = Window:NewTab("Players");
 local TargetSection = TargetTab:NewSection("Players");
 local RapidTab = Window:NewTab("Rapid Punch");
